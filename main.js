@@ -6,9 +6,19 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 
 
+const BIG_ORB_RADIUS = 500
+
+
 
 function getRandomInt(max, min = 0) {
 	return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function setMinMax(value, min, max) {
+	return Math.max(
+		Math.min(value, max),
+		min
+	);
 }
 
 
@@ -47,24 +57,31 @@ const gradient = ColorUtils.generateGradient(0x7734eb, 0xebde34, 60, true);
 console.log(gradient);
 
 for (var i = 0; i < points.length; i = i + 3) {
-	const geometry = new THREE.SphereGeometry(6, 4, 4);
+	const geometry = new THREE.SphereGeometry(6, 8, 8);
+	const x = points[i];
+	const y = points[i+1];
+	const z = points[i+2];
 	
 	// Set orb location
-	geometry.translate(points[i], points[i + 1], points[i + 2]);
+	geometry.translate(x, y, z);
 	
 	// Set color & current gradient step for animation
-	const randomInt = getRandomInt(gradient.length);
-	console.log(gradient[randomInt])
-	const material = new THREE.MeshBasicMaterial({ color: gradient[randomInt].rgb });
+	// const gradientStep = getRandomInt(gradient.length);
+	const gradientStep = setMinMax(
+		Math.floor(gradient.length * (y + BIG_ORB_RADIUS) / (BIG_ORB_RADIUS * 2)),
+		0,
+		gradient.length - 1
+	);
+	console.log(gradientStep)
+	console.log(gradient[gradientStep])
+	const material = new THREE.MeshBasicMaterial({ color: gradient[gradientStep].rgb });
 
 	const orb = new THREE.Mesh(geometry, material);
 	orbs.add(orb);
 	data[i / 3] = {
 		orb,
-		// x: points[i],
-		// y: points[i + 1],
-		// z: points[i + 2],
-		gradientStep: randomInt,
+		// x, y, z
+		gradientStep: gradientStep,
 	};
 }
 
