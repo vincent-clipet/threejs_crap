@@ -99,7 +99,7 @@ const controls = new OrbitControls( camera, renderer.domElement );
 // Setup ground
 const ground = {
 	geometry: new THREE.PlaneGeometry(GROUND.size, GROUND.size),
-	material: new THREE.MeshBasicMaterial({color: GROUND.color, side: THREE.DoubleSide} ),
+	material: new THREE.MeshStandardMaterial({color: GROUND.color, side: THREE.DoubleSide} ),
 }
 ground.plane = new THREE.Mesh(ground.geometry, ground.material);
 ground.plane.position.set(GROUND.z, GROUND.y, GROUND.z);
@@ -116,19 +116,19 @@ scene.add(lightAmbient);
 const lightA = new THREE.PointLight(LIGHTS.a.color, LIGHTS.a.intensity);
 lightA.position.set(LIGHTS.a.x, LIGHTS.a.y, LIGHTS.a.z);
 lightA.castShadow = true;
-lightA.shadow.mapSize.width = 128;
-lightA.shadow.mapSize.height = 128;
+lightA.shadow.mapSize.width = 1024;
+lightA.shadow.mapSize.height = 1024;
 lightA.shadow.camera.near = 1;
-lightA.shadow.camera.far = 5000;
+lightA.shadow.camera.far = 20000;
 scene.add(lightA);
 
 const lightB = new THREE.PointLight(LIGHTS.b.color, LIGHTS.b.intensity);
 lightB.position.set(LIGHTS.b.x, LIGHTS.b.y, LIGHTS.b.z);
 lightB.castShadow = true;
-lightB.shadow.mapSize.width = 128;
-lightB.shadow.mapSize.height = 128;
+lightB.shadow.mapSize.width = 512;
+lightB.shadow.mapSize.height = 512;
 lightB.shadow.camera.near = 1;
-lightB.shadow.camera.far = 5000;
+lightB.shadow.camera.far = 20000;
 scene.add(lightB);
 
 const lightSpotlight = new THREE.SpotLight(
@@ -144,8 +144,7 @@ lightSpotlight.castShadow = true;
 lightSpotlight.shadow.mapSize.width = 128;
 lightSpotlight.shadow.mapSize.height = 128;
 lightSpotlight.shadow.camera.near = 1;
-lightSpotlight.shadow.camera.far = 5000;
-lightSpotlight.shadow.focus = 1;
+lightSpotlight.shadow.camera.far = 20000;
 scene.add(lightSpotlight);
 
 
@@ -156,6 +155,8 @@ const inner = {
 	material: new THREE.MeshStandardMaterial({ color: INNER_SPHERE.color }),
 }
 inner.mesh = new THREE.Mesh(inner.geometry, inner.material);
+inner.mesh.receiveShadow = true;
+inner.mesh.castShadow = true;
 scene.add(inner.mesh);
 
 
@@ -173,7 +174,7 @@ const gradient = ColorUtils.generateGradient(
 );
 
 for (var i = 0; i < points.length; i = i + 3) {
-	const geometry = new THREE.SphereGeometry(6, 4, 4);
+	const geometry = new THREE.SphereGeometry(6, 8, 8);
 	const x = points[i];
 	const y = points[i+1];
 	const z = points[i+2];
