@@ -4,42 +4,39 @@ const Config = {
 		x: 0, y: 0, z: 2200,
 		fov: 30,
 	},
-	innerSphere: {
+	rim1: {
+		color: 0xf0a337,
+		innerRadius: 440,
+		outerRadius: 470,
+		height: 30,
+	},
+	rim2: {
+		color: 0xf0c837,
+		innerRadius: 490,
+		outerRadius: 520,
+		height: 30,
+	},
+	rim3: {
+		color: 0xedf037,
+		innerRadius: 540,
+		outerRadius: 570,
+		height: 30,
+	},
+	globe: {
 		radius: 400,
-		color: 0xffffff,
-	},
-	outerSphere: {
-		radius: 500,
-	},
-	gradient: {
-		size: 60,
-		startColor: 0x7734eb,
-		endColor: 0xebde34,
+		detail: 1,
+		color: 0x222222,
 	},
 	lights: {
 		ambient: {
-			color: 0xaa3300,
-			intensity: 1,
+			color: 0xffffff,
+			intensity: 3,
 		},
-		a: {
+		main: {
 			x: 2000, y: 2000, z: 2000,
 			color: 0xebde34,
 			intensity: 50000000,
 		},
-		b: {
-			x: -4000, y: 0, z: -4000,
-			color: 0xebde34,
-			intensity: 5000000,
-		},
-		spotlight: {
-			x: -500, y: -500, z: 2000,
-			color: 0x00ffff,
-			intensity: 5000000,
-			distance: 0,
-			angle: Math.PI / 32,
-			penumbra: 1,
-			decay: 2,
-		}
 	},
 	ground: {
 		x: 0, y: -600, z: 0,
