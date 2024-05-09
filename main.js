@@ -2,69 +2,10 @@ import * as THREE from "three";
 import WebGL from "three/addons/capabilities/WebGL.js";
 import Stats from "three/addons/libs/stats.module.js";
 import ColorUtils from "./utils/ColorUtils";
+import ThreeUtils from "./utils/ThreeUtils";
+import MathUtils from "./utils/MathUtils";
+import { Config as C } from "./config.js";
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-
-
-const CAMERA = {
-	x: 0, y: 0, z: 2200,
-	fov: 30,
-}
-const INNER_SPHERE =  {
-	radius: 400,
-	color: 0xffffff,
-}
-const BIG_SPHERE = {
-	radius: 500,
-}
-const GRADIENT = {
-	size: 60,
-	startColor: 0x7734eb,
-	endColor: 0xebde34,
-}
-const LIGHTS = {
-	ambient: {
-		color: 0xaa3300,
-		intensity: 1,
-	},
-	a: {
-		x: 2000, y: 2000, z: 2000,
-		color: 0xebde34,
-		intensity: 50000000,
-	},
-	b: {
-		x: -4000, y: 0, z: -4000,
-		color: 0xebde34,
-		intensity: 5000000,
-	},
-	spotlight: {
-		x: -500, y: -500, z: 2000,
-		color: 0x00ffff,
-		intensity: 5000000,
-		distance: 0,
-		angle: Math.PI / 32,
-		penumbra: 1,
-		decay: 2,
-	}
-}
-const GROUND = {
-	x: 0, y: -600, z: 0,
-	size: 5000,
-	color: 0x335033,
-}
-
-
-
-function getRandomInt(max, min = 0) {
-	return Math.floor(Math.random() * (max - min)) + min;
-}
-
-function setMinMax(value, min, max) {
-	return Math.max(
-		Math.min(value, max),
-		min
-	);
-}
 
 
 
@@ -84,80 +25,65 @@ const scene = new THREE.Scene();
 
 // Setup Camera
 const camera = new THREE.PerspectiveCamera(
-	CAMERA.fov,
+	C.camera.fov,
 	window.innerWidth / window.innerHeight,
 	0.1,
 	1000000,
 );
-camera.position.set(CAMERA.x, CAMERA.y, CAMERA.z);
+camera.position.set(C.camera.x, C.camera.y, C.camera.z);
 
 // Setup controls
 const controls = new OrbitControls( camera, renderer.domElement );
 
 
 
-// Setup ground
-const ground = {
-	geometry: new THREE.PlaneGeometry(GROUND.size, GROUND.size),
-	material: new THREE.MeshStandardMaterial({color: GROUND.color, side: THREE.DoubleSide} ),
-}
-ground.plane = new THREE.Mesh(ground.geometry, ground.material);
-ground.plane.position.set(GROUND.z, GROUND.y, GROUND.z);
-ground.plane.rotateX(Math.PI / 2)
-ground.plane.receiveShadow = true;
-scene.add(ground.plane);
 
 
 
 // Setup lights
-const lightAmbient = new THREE.AmbientLight(LIGHTS.ambient.color, LIGHTS.ambient.intensity);
-scene.add(lightAmbient);
+const lightAmbient = new THREE.AmbientLight(C.lights.ambient.color, C.lights.ambient.intensity);
 
-const lightA = new THREE.PointLight(LIGHTS.a.color, LIGHTS.a.intensity);
-lightA.position.set(LIGHTS.a.x, LIGHTS.a.y, LIGHTS.a.z);
-lightA.castShadow = true;
-lightA.shadow.mapSize.width = 1024;
-lightA.shadow.mapSize.height = 1024;
-lightA.shadow.camera.near = 1;
-lightA.shadow.camera.far = 20000;
-scene.add(lightA);
+const lightA = new THREE.PointLight(C.lights.a.color, C.lights.a.intensity);
+lightA.position.set(C.lights.a.x, C.lights.a.y, C.lights.a.z);
+ThreeUtils.setupShadows(lightA, 1024)
 
-const lightB = new THREE.PointLight(LIGHTS.b.color, LIGHTS.b.intensity);
-lightB.position.set(LIGHTS.b.x, LIGHTS.b.y, LIGHTS.b.z);
-lightB.castShadow = true;
-lightB.shadow.mapSize.width = 512;
-lightB.shadow.mapSize.height = 512;
-lightB.shadow.camera.near = 1;
-lightB.shadow.camera.far = 20000;
-scene.add(lightB);
+const lightB = new THREE.PointLight(C.lights.b.color, C.lights.b.intensity);
+lightB.position.set(C.lights.b.x, C.lights.b.y, C.lights.b.z);
+ThreeUtils.setupShadows(lightB, 512)
 
 const lightSpotlight = new THREE.SpotLight(
-	LIGHTS.spotlight.color,
-	LIGHTS.spotlight.intensity,
-	LIGHTS.spotlight.distance,
-	LIGHTS.spotlight.angle,
-	LIGHTS.spotlight.penumbra,
-	LIGHTS.spotlight.decay
+	C.lights.spotlight.color,
+	C.lights.spotlight.intensity,
+	C.lights.spotlight.distance,
+	C.lights.spotlight.angle,
+	C.lights.spotlight.penumbra,
+	C.lights.spotlight.decay
 );
-lightSpotlight.position.set(LIGHTS.spotlight.x, LIGHTS.spotlight.y, LIGHTS.spotlight.z);
-lightSpotlight.castShadow = true;
-lightSpotlight.shadow.mapSize.width = 128;
-lightSpotlight.shadow.mapSize.height = 128;
-lightSpotlight.shadow.camera.near = 1;
-lightSpotlight.shadow.camera.far = 20000;
-scene.add(lightSpotlight);
+lightSpotlight.position.set(C.lights.spotlight.x, C.lights.spotlight.y, C.lights.spotlight.z);
+ThreeUtils.setupShadows(lightSpotlight, 128)
+
+
+
+// Setup ground
+const ground = {
+	geometry: new THREE.PlaneGeometry(C.ground.size, C.ground.size),
+	material: new THREE.MeshStandardMaterial({color: C.ground.color, side: THREE.DoubleSide} ),
+}
+ground.plane = new THREE.Mesh(ground.geometry, ground.material);
+ground.plane.position.set(C.ground.z, C.ground.y, C.ground.z);
+ground.plane.rotateX(Math.PI / 2)
+ground.plane.receiveShadow = true;
 
 
 
 // Inner sphere
 const inner = {
-	geometry: new THREE.SphereGeometry(INNER_SPHERE.radius, 32, 32),
-	material: new THREE.MeshStandardMaterial({ color: INNER_SPHERE.color }),
+	geometry: new THREE.SphereGeometry(C.innerSphere.radius, 32, 32),
+	material: new THREE.MeshStandardMaterial({ color: C.innerSphere.color }),
 }
 inner.mesh = new THREE.Mesh(inner.geometry, inner.material);
 inner.mesh.receiveShadow = true;
 inner.mesh.castShadow = true;
-scene.add(inner.mesh);
 
 
 
@@ -169,8 +95,8 @@ const points = geometry.getAttribute("position").array;
 var data = new Array(points.length / 3);
 
 const gradient = ColorUtils.generateGradient(
-	GRADIENT.startColor, GRADIENT.endColor,
-	GRADIENT.size, true
+	C.gradient.startColor, C.gradient.endColor,
+	C.gradient.size, true
 );
 
 for (var i = 0; i < points.length; i = i + 3) {
@@ -183,9 +109,8 @@ for (var i = 0; i < points.length; i = i + 3) {
 	geometry.translate(x, y, z);
 	
 	// Set color & current gradient step for animation
-	// const gradientStep = getRandomInt(gradient.length);
-	const gradientStep = setMinMax(
-		Math.floor(gradient.length * (y + BIG_SPHERE.radius) / (BIG_SPHERE.radius * 2)),
+	const gradientStep = MathUtils.clamp(
+		Math.floor(gradient.length * (y + C.outerSphere.radius) / (C.outerSphere.radius * 2)),
 		0,
 		gradient.length - 1
 	);
@@ -201,13 +126,23 @@ for (var i = 0; i < points.length; i = i + 3) {
 		gradientStep: gradientStep,
 	};
 }
+
+
+
+// Add everything to the scene
+scene.add(lightAmbient);
+scene.add(lightA);
+scene.add(lightB);
+scene.add(lightSpotlight);
+scene.add(ground.plane);
+scene.add(inner.mesh);
 scene.add(orbs);
-
-
-
 scene.add(new THREE.CameraHelper(lightA.shadow.camera));
 scene.add(new THREE.CameraHelper(lightB.shadow.camera));
 scene.add(new THREE.SpotLightHelper(lightSpotlight));
+
+
+
 
 
 
